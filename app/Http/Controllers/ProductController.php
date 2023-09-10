@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
+use App\Models\Api\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -13,5 +13,10 @@ class ProductController extends Controller
         return view('product.index', [
         'products' => $products
         ]);
+    }
+
+    public function view(Product $product)
+    {
+        return view('product.view', ['product'=>$product]);
     }
 }
