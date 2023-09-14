@@ -43,5 +43,6 @@ Route::middleware(['auth','verified'])->group(function (){
     Route::get('/orders/{order}', [OrderController::class, 'view'])->name('order.view');
 
 });
+Route::post('/webhook/stripe', [CheckoutController::class, 'webhook']);
 
 require __DIR__.'/auth.php';
