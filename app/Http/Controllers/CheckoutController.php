@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Helpers\Cart;
 use App\Models\CartItem;
+use App\Mail\NewOrderMail;
 use App\Models\Order;
 use App\Models\OrderItems;
 use App\Models\Payment;
@@ -239,9 +240,9 @@ class CheckoutController extends Controller
         try {
             $adminUsers = User::where('is_admin', 1)->get();
 
-//            foreach ([...$adminUsers, $order->user] as $user) {
-//                Mail::to($user)->send(new NewOrderEmail($order, (bool)$user->is_admin));
-//            }
+           foreach ([...$adminUsers, $order->user] as $user) {
+               Mail::to($user)->send(new NewOrderMail($order, (bool)$user->is_admin));
+           }
         } catch (\Exception $e) {
             Log::critical('Email sending does not work. '. $e->getMessage());
         }
