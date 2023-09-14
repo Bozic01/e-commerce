@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Helpers\Cart;
 use App\Models\CartItem;
+use App\Mail\NewOrderMail;
 use App\Models\Order;
 use App\Models\OrderItems;
 use App\Models\Payment;
@@ -175,6 +176,48 @@ class CheckoutController extends Controller
         return redirect($session->url);
     }
 
+    public function webhook()
+    {
+         \Stripe\Stripe::setApiKey(getenv('STRIPE_SECRET_KEY'));
+
+         $endpoint_secret = env('WEBHOOK_SECRET_KEY');
+
+          $payload = @file_get_contents('php://input');
+          $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+          $event = null;
+
+          try {
+                $event = \Stripe\Webhook::constructEvent(
+                    $payload, $sig_header, $endpoint_secret
+                );
+          } catch (\UnexpectedValueException $e) {
+              // Invalid payload
+              return response('', 401);
+          } catch (\Stripe\Exception\SignatureVerificationException $e) {
+              // Invalid signature
+              return response('', 402);
+          }
+
+          // Handle the event
+          switch ($event->type) {
+              case 'checkout.session.completed':
+                    $paymentIntent = $event->data->object;
+                    $sessionId = $paymentIntent['id'];
+
+                    $payment = Payment::query()
+                       ->where(['session_id' => $sessionId, 'status' => PaymentStatus::Pending])
+                       ->first();
+                    if ($payment) {
+                        $this->updateOrderAndSession($payment);
+                    }
+                    // ... handle other event types
+                default:
+                   echo 'Received unknown event type ' . $event->type;
+                }
+
+          return response('', 200);
+    }
+
     private function updateOrderAndSession(Payment $payment)
     {
         DB::beginTransaction();
@@ -197,9 +240,9 @@ class CheckoutController extends Controller
         try {
             $adminUsers = User::where('is_admin', 1)->get();
 
-//            foreach ([...$adminUsers, $order->user] as $user) {
-//                Mail::to($user)->send(new NewOrderEmail($order, (bool)$user->is_admin));
-//            }
+           foreach ([...$adminUsers, $order->user] as $user) {
+               Mail::to($user)->send(new NewOrderMail($order, (bool)$user->is_admin));
+           }
         } catch (\Exception $e) {
             Log::critical('Email sending does not work. '. $e->getMessage());
         }
