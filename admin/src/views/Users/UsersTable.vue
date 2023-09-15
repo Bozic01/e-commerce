@@ -232,9 +232,9 @@ function deleteUser(user) {
   if (!confirm(`Are you sure you want to delete the user?`)) {
     return
   }
-  store.dispatch('deleteUser', user.id)
+  store.dispatch('deleteUser', user)
     .then(res => {
-      // TODO Show notification
+      store.commit('showToast', 'User has been successfully deleted');
       store.dispatch('getUsers')
     })
 }

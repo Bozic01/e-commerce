@@ -7,6 +7,7 @@ use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Api\User;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -25,7 +26,7 @@ class UserController extends Controller
         $perPage = request('per_page',10);
         $search = request('search','');
         $sortField = request('sort_field','updated_at');
-        $sortDirection = request('sort_direction');
+        $sortDirection = request('sort_direction','desc');
 
         $query = User::query()
            ->orderBy($sortField, $sortDirection);
@@ -44,7 +45,7 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(ProductRequest $request)
+    public function store(CreateUserRequest $request)
     {
         $data = $request->validated();
         $data['is_admin'] = true;
@@ -55,6 +56,13 @@ class UserController extends Controller
         $data['updated_by'] = $request->user()->id;
 
         $user = User::create($data);
+
+        $customer = new Customer();
+                $names = explode(" ",$user->name);
+                $customer->user_id = $user->id;
+                $customer->first_name = $names[0];
+                $customer->last_name = $names[1] ?? '';
+                $customer->save();
 
         return new UserResource($user);
     }
