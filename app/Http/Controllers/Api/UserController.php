@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -27,10 +28,17 @@ class UserController extends Controller
         $sortDirection = request('sort_direction');
 
         $query = User::query()
-           ->orderBy($sortField, $sortDirection)
-           ->paginate($perPage);
+           ->orderBy($sortField, $sortDirection);
 
-        return UserResource::collection($query);
+           if($search) {
+              $query
+              ->where('users.name', 'like', "%{$search}%")
+              ->orWhere('users.email', 'like', "%{$search}%");
+           }
+
+        $paginator = $query->paginate($perPage);
+
+        return UserResource::collection($paginator);
     }
 
     /**
@@ -65,7 +73,7 @@ class UserController extends Controller
     public function update(ProductRequest $request, Product $product)
     {
        $data = $request->validated();
-      
+
         if(!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
@@ -89,5 +97,5 @@ class UserController extends Controller
         return response()->noContent();
     }
 
-   
+
 }

@@ -13,21 +13,26 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
-class OrderController extends Controllers
+class OrderController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
         $perPage = request('per_page', 10);
         $search = request('search','');
-        $sortField = request('sort_field','updated_at');
+        $sortField = request('sort_field', 'updated_at');
         $sortDirection = request('sort_direction', 'desc');
 
         $query = Order::query()
             ->withCount('items')
             ->with('user.customer')
-            ->where('id','like',"%{$search}%")
+            ->where('id', 'like', "%{$search}%")
             ->orderBy($sortField, $sortDirection)
-            ->paginate($perPage)
+            ->paginate($perPage);
 
         return OrderListResource::collection($query);
     }
@@ -35,7 +40,7 @@ class OrderController extends Controllers
     public function view(Order $order)
     {
         $order->load('items.product');
-        return new OrderResource($order)
+        return new OrderResource($order);
     }
 
     public function getStatuses()
