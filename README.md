@@ -26,4 +26,11 @@ Make sure you have environment setup properly. You will need MySQL, PHP8.1, Node
     superadmin@gmail.com
     Test1234
     ```
+
+### Stripe payment checkout
+1. Enter your email from
+2. Card number `4242 4242 4242 4242`
+3. Valid future date `12/34`
+4. CVC any trhee-digit CVC, example `567`
+5. Enter any Country
     

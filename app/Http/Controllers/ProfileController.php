@@ -28,13 +28,16 @@ class ProfileController extends Controller
             $countries = Country::query()->orderBy('name')->get();
             return view('profile.view', compact('customer', 'user', 'shippingAddress', 'billingAddress', 'countries'));
         }
-        return view('profile.view2', compact('customer', 'user', ));
+        return view('profile.adminView', compact('customer', 'user', ));
 
     }
 
    public function store(ProfileRequest $request)
        {
+
+
            $customerData = $request->validated();
+        //    dd($customerData);
            $shippingData = $customerData['shipping'];
            $billingData = $customerData['billing'];
 

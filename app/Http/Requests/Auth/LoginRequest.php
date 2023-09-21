@@ -53,15 +53,15 @@ class LoginRequest extends FormRequest
         $user = $this->user();
         $customer = $user->customer;
 
-        if($customer->status !== CustomerStatus::Active->value) {
-            Auth::guard('web')->logout();
-            $this->session()->invalidate();
-            $this->session()->regenerateToken();
+        // if($customer->status !== CustomerStatus::Active->value) {
+        //     Auth::guard('web')->logout();
+        //     $this->session()->invalidate();
+        //     $this->session()->regenerateToken();
 
-            throw ValidationException::withMessages([
-            'email' => 'Your account has been disabled',
-            ]);
-        }
+        //     throw ValidationException::withMessages([
+        //     'email' => 'Your account has been disabled',
+        //     ]);
+        // }
 
         RateLimiter::clear($this->throttleKey());
     }
